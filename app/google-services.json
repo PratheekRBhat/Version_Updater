@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "860095643857",
+    "project_id": "version-updater-4c62f",
+    "storage_bucket": "version-updater-4c62f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860095643857:android:cb8f0c94b4cb29318dc5f0",
+        "android_client_info": {
+          "package_name": "com.example.versionupdater"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860095643857-cnvmho82fld06psasl31rg1jobs3leng.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABrpvRYDD60FMMUhXtj67E2qwy1_x-ZxY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860095643857-cnvmho82fld06psasl31rg1jobs3leng.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
