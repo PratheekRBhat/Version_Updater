@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         StorageReference fileRef = storageRef.child("app-debug.apk");
 
         // Create a directory to store the downloaded file
-        File rootPath = new File(Environment.getExternalStorageDirectory(), "file_name");
+        File rootPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "file_name");
         if (!rootPath.exists())
             rootPath.mkdirs();
 
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         // Install the newly downloaded file.
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/file_name/" + "app-debug.apk")), "application/vnd.android.package-archive");
+        intent.setDataAndType(Uri.fromFile(new File(localFile.getAbsolutePath())), "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
