@@ -1,14 +1,20 @@
 package com.example.versionupdater;
 
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -40,7 +46,11 @@ public class MainActivity extends AppCompatActivity {
 
         versionTV = findViewById(R.id.text_version);
 
-        database = FirebaseDatabase.getInstance();
+        // Allow installation of files. Needed for newer versions of Android
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        
+        // Receive the version number from the server and compare with current version number
         getVersionNumberFromServer();
 
         // This block of code is used to receive the current version of the application from the Package Manager.
@@ -56,12 +66,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getVersionNumberFromServer() {
+        database = FirebaseDatabase.getInstance();
         reference = database.getReference("app_versions");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 receivedNumber = snapshot.child("version_number").getValue(Integer.class);
-                compareVersions(receivedNumber, versionNumber);
+                compareVersions(receivedNumber, versionNumber); //Function to compare the versions and download the new version if needed.
             }
 
             @Override
@@ -75,36 +86,42 @@ public class MainActivity extends AppCompatActivity {
         if (receivedNumber > versionNumber) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-            builder.setTitle("A new version of the app is available. Do you wish to update it?")
+            builder.setTitle("Do you wish to update to a newer version?")
                     .setNegativeButton("No", (dialogInterface, i) -> {
                         dialogInterface.dismiss();
                     })
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
-                        downloadFile();
+                        downloadFile(); // Function to download the apk from the server.
                     }));
 
             AlertDialog dialog = builder.create();
             dialog.show();
+        } else {
+            Toast.makeText(this, "Latest version installed.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void downloadFile() {
+        // Reference for the file in Firebase Storage
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReferenceFromUrl("gs://version-updater-4c62f.appspot.com/apk bundle");
-        StorageReference fileRef = storageRef.child("version_number.txt");
+        StorageReference fileRef = storageRef.child("app-debug.apk");
 
+        // Create a directory to store the downloaded file
         File rootPath = new File(Environment.getExternalStorageDirectory(), "file_name");
         if (!rootPath.exists())
             rootPath.mkdirs();
 
-        final File localFile = new File(rootPath, "version_number.txt");
+        final File localFile = new File(rootPath, "app-debug.apk");
 
+        // Download the file from Firebase Storage
         fileRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> Log.e("firebase", "; local temp file created." + localFile.toString()))
                 .addOnFailureListener(exception -> Log.e("firebase ",";local tem file not created  created " +exception.toString()));
 
+        // Install the newly downloaded file.
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(localFile), "application/vnd.android.package-archive");
+        intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/file_name/" + "app-debug.apk")), "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
